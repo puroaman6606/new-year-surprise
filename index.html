@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New Year Surprise 🎆</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: black;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* 🎬 STRANGER BACKGROUND (HIDDEN INITIALLY) */
+
+#bg {
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
+    url("stranger.jpg") center/cover no-repeat;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  z-index: -2;
+}
+
+/* TAP SCREEN */
+#tapScreen {
+  position: fixed;
+  inset: 0;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  text-align: center;
+  z-index: 100;
+  cursor: pointer;
+}
+
+/* INTRO TEXT */
+#overlay {
+  position: fixed;
+  inset: 0;
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  z-index: 50;
+}
+
+/* MAIN CONTENT */
+#main {
+  display: none;
+  position: absolute;
+  top: 35%;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+}
+
+#title {
+  font-size: 3.4rem;
+  color: crimson;
+  text-shadow: 0 0 30px crimson;
+}
+
+#name {
+  font-size: 4.2rem;
+  margin-top: 20px;
+  color: #00ffe7;
+  text-shadow: 0 0 40px #00ffe7;
+  animation: shake 0.4s infinite alternate;
+}
+
+@keyframes shake {
+  from { transform: translateX(-4px); }
+  to { transform: translateX(4px); }
+}
+
+/* FIREWORK CANVAS */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BACKGROUND -->
+<div id="bg"></div>
+
+<!-- MUSIC -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- TAP -->
+<div id="tapScreen">
+  🎆 Tap anywhere to enter the Upside Down 🎆
+</div>
+
+<div id="overlay"></div>
+
+<div id="main">
+  <div id="title">🎆 HAPPY NEW YEAR 2026 🎆</div>
+  <div id="name"></div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+/* ===============================
+   USERNAME FROM URL
+================================ */
+const params = new URLSearchParams(window.location.search);
+const username =
+  params.get("username") ||
+  params.get("name") ||
+  "SPECIAL ONE";
+
+/* ===============================
+   AUDIO + START
+================================ */
+const tapScreen = document.getElementById("tapScreen");
+const music = document.getElementById("bgMusic");
+const overlay = document.getElementById("overlay");
+const bg = document.getElementById("bg");
+
+tapScreen.addEventListener("click", async () => {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AudioContext();
+  await ctx.resume();
+
+  music.volume = 0.8;
+  music.play().catch(()=>{});
+
+  tapScreen.style.display = "none";
+  overlay.style.display = "flex";
+  startIntro();
+});
+
+/* ===============================
+   INTRO TEXT
+================================ */
+const introText = [
+  "Entering the Upside Down...",
+  "Something strange is coming..."
+];
+
+let line = 0, char = 0;
+
+function startIntro() {
+  overlay.innerText = "";
+  typeLine();
+}
+
+function typeLine() {
+  if (line >= introText.length) {
+    setTimeout(startReveal, 1200);
+    return;
+  }
+  overlay.innerText = introText[line].slice(0, char++);
+  if (char <= introText[line].length) {
+    setTimeout(typeLine, 60);
+  } else {
+    char = 0;
+    line++;
+    setTimeout(typeLine, 700);
+  }
+}
+
+/* ===============================
+   🔥 NAME + IMAGE REVEAL (SIMULTANEOUS)
+================================ */
+function startReveal() {
+  overlay.innerText = "This message is specially for...";
+  setTimeout(() => {
+    overlay.style.display = "none";
+
+    // 🔥 SHOW IMAGE + NAME TOGETHER
+    bg.style.opacity = "1";
+    document.getElementById("main").style.display = "block";
+    document.getElementById("name").innerText = username.toUpperCase();
+
+    blastMode = true;
+  }, 2500);
+}
+
+/* ===============================
+   FIREWORKS
+================================ */
+const canvas = document.getElementById("canvas");
+const ctx2 = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+let fireworks = [];
+let blastMode = false;
+
+class Firework {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.targetY = Math.random() * canvas.height / 2;
+    this.speed = 6;
+    this.exploded = false;
+    this.particles = [];
+  }
+  update() {
+    if (!this.exploded) {
+      this.y -= this.speed;
+      if (this.y <= this.targetY) {
+        this.exploded = true;
+        for (let i = 0; i < (blastMode ? 120 : 40); i++) {
+          this.particles.push(new Particle(this.x, this.y));
+        }
+      }
+    }
+  }
+  draw() {
+    if (!this.exploded) {
+      ctx2.fillStyle = "white";
+      ctx2.beginPath();
+      ctx2.arc(this.x, this.y, 2, 0, Math.PI * 2);
+      ctx2.fill();
+    }
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.angle = Math.random() * Math.PI * 2;
+    this.speed = Math.random() * 8 + 2;
+    this.life = 80;
+    this.color = `hsl(${Math.random() * 360},100%,60%)`;
+  }
+  update() {
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+    this.life--;
+  }
+  draw() {
+    ctx2.fillStyle = this.color;
+    ctx2.beginPath();
+    ctx2.arc(this.x, this.y, 2, 0, Math.PI * 2);
+    ctx2.fill();
+  }
+}
+
+function animate() {
+  ctx2.clearRect(0,0,canvas.width,canvas.height);
+
+  if (Math.random() < (blastMode ? 0.15 : 0.03))
+    fireworks.push(new Firework());
+
+  fireworks.forEach((fw, i) => {
+    fw.update();
+    fw.draw();
+    fw.particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    fw.particles = fw.particles.filter(p => p.life > 0);
+    if (fw.exploded && fw.particles.length === 0)
+      fireworks.splice(i, 1);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
