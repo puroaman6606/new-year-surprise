@@ -14,14 +14,10 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* 🎬 STRANGER BACKGROUND (HIDDEN INITIALLY) */
-
+/* 🔥 USER BACKGROUND */
 #bg {
   position: fixed;
   inset: 0;
-  background:
-    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
-    url("stranger.jpg") center/cover no-repeat;
   opacity: 0;
   transition: opacity 1.2s ease;
   z-index: -2;
@@ -32,62 +28,110 @@ body {
   position: fixed;
   inset: 0;
   background: black;
-  color: white;
+  color: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 2.1rem;
   text-align: center;
   z-index: 100;
   cursor: pointer;
+  text-shadow:
+    0 0 15px rgba(255,255,255,.4),
+    0 10px 25px rgba(0,0,0,1);
 }
 
 /* INTRO TEXT */
 #overlay {
   position: fixed;
   inset: 0;
-  color: white;
   display: none;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 2.2rem;
+  color: #ddd;
   z-index: 50;
+  text-shadow:
+    0 0 15px rgba(0,0,0,1),
+    0 10px 25px rgba(0,0,0,1);
 }
 
-/* MAIN CONTENT */
+/* MAIN */
 #main {
   display: none;
   position: absolute;
-  top: 35%;
+  top: 30%;
   width: 100%;
   text-align: center;
   z-index: 10;
 }
 
-#title {
-  font-size: 3.4rem;
-  color: crimson;
-  text-shadow: 0 0 30px crimson;
+/* 🎬 CINEMATIC TITLE */
+.cinematic-title {
+  font-size: 4.8rem;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  perspective: 800px;
 }
 
+.cinematic-title span {
+  display: inline-block;
+  color: #7a0000;
+  text-shadow:
+    0 0 15px rgba(139,0,0,.9),
+    0 0 35px rgba(0,0,0,1),
+    0 12px 25px rgba(0,0,0,1);
+  animation:
+    wave 3.5s ease-in-out infinite,
+    glowBreath 4s ease-in-out infinite;
+}
+
+.cinematic-title span:nth-child(even) {
+  animation-delay: .25s;
+}
+
+/* USERNAME */
 #name {
-  font-size: 4.2rem;
-  margin-top: 20px;
-  color: #00ffe7;
-  text-shadow: 0 0 40px #00ffe7;
-  animation: shake 0.4s infinite alternate;
+  font-size: 5.3rem;
+  margin-top: 25px;
+  letter-spacing: 3px;
+  color: #00fff0;
+  text-shadow:
+    0 0 20px rgba(0,255,240,.9),
+    0 0 45px rgba(0,0,0,1),
+    0 12px 30px rgba(0,0,0,1);
+  animation: pulse 1.8s infinite ease-in-out;
 }
 
-@keyframes shake {
-  from { transform: translateX(-4px); }
-  to { transform: translateX(4px); }
+/* ANIMATIONS */
+@keyframes pulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
+@keyframes wave {
+  0% { transform: translateY(0) rotateX(0deg); }
+  50% { transform: translateY(-14px) rotateX(12deg); }
+  100% { transform: translateY(0) rotateX(0deg); }
+}
+
+@keyframes glowBreath {
+  from {
+    text-shadow:
+      0 0 10px rgba(139,0,0,.6),
+      0 0 25px rgba(0,0,0,1);
+  }
+  to {
+    text-shadow:
+      0 0 25px rgba(255,0,0,.9),
+      0 0 50px rgba(0,0,0,1);
+  }
 }
 
 /* FIREWORK CANVAS */
 canvas {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 5;
 }
 </style>
@@ -95,190 +139,170 @@ canvas {
 
 <body>
 
-<!-- BACKGROUND -->
 <div id="bg"></div>
 
-<!-- MUSIC -->
 <audio id="bgMusic" loop preload="auto">
   <source src="music.mp3" type="audio/mpeg">
 </audio>
 
-<!-- TAP -->
 <div id="tapScreen">
-  🎆 Tap anywhere to enter the Upside Down 🎆
+  🎆 Tap anywhere to begin your surprise 🎆
 </div>
 
 <div id="overlay"></div>
 
 <div id="main">
-  <div id="title">🎆 HAPPY NEW YEAR 2026 🎆</div>
+  <div class="cinematic-title">
+    <span>H</span><span>A</span><span>P</span><span>P</span><span>Y</span>
+    <span>&nbsp;</span>
+    <span>N</span><span>E</span><span>W</span>
+    <span>&nbsp;</span>
+    <span>Y</span><span>E</span><span>A</span><span>R</span>
+    <span>&nbsp;</span>
+    <span>2</span><span>0</span><span>2</span><span>6</span>
+  </div>
   <div id="name"></div>
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
-/* ===============================
-   USERNAME FROM URL
-================================ */
-const params = new URLSearchParams(window.location.search);
-const username =
-  params.get("username") ||
-  params.get("name") ||
-  "SPECIAL ONE";
+/* USERNAME */
+const params = new URLSearchParams(location.search);
+const rawName = params.get("username") || "SPECIAL ONE";
+const username = rawName.toLowerCase();
 
-/* ===============================
-   AUDIO + START
-================================ */
-const tapScreen = document.getElementById("tapScreen");
-const music = document.getElementById("bgMusic");
-const overlay = document.getElementById("overlay");
+/* USER IMAGE MAP */
+const images = {
+  shweta: "shweta.jpg",
+  rahul: "rahul.jpg",
+  amit: "amit.jpg",
+  akhil: "akhil.jpg",
+  aman:"aman.jpg",
+  aakash: "aakash.jpg",
+  sonam: "sonam.jpg",
+  khusboo: "khusboo.jpg",
+  kshamanand: "kshamanand.jpg",
+};
+
 const bg = document.getElementById("bg");
+bg.style.background = `
+  linear-gradient(rgba(0,0,0,.65), rgba(0,0,0,.85)),
+  url("${images[username] || "stranger.jpg"}") center/cover no-repeat
+`;
 
-tapScreen.addEventListener("click", async () => {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const ctx = new AudioContext();
+/* AUDIO + START */
+const tapScreen = document.getElementById("tapScreen");
+const overlay = document.getElementById("overlay");
+const music = document.getElementById("bgMusic");
+
+tapScreen.onclick = async () => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
   await ctx.resume();
-
-  music.volume = 0.8;
+  music.volume = .8;
   music.play().catch(()=>{});
-
   tapScreen.style.display = "none";
   overlay.style.display = "flex";
   startIntro();
-});
+};
 
-/* ===============================
-   INTRO TEXT
-================================ */
-const introText = [
-  "Entering the Upside Down...",
-  "Something strange is coming..."
+/* INTRO */
+const lines = [
+  "Initializing celebration...",
+  "Preparing something special...",
+  "Almost ready..."
 ];
+let l = 0, c = 0;
 
-let line = 0, char = 0;
+function startIntro() { type(); }
 
-function startIntro() {
-  overlay.innerText = "";
-  typeLine();
+function type() {
+  if (l >= lines.length) return setTimeout(reveal, 1200);
+  overlay.innerText = lines[l].slice(0, c++);
+  if (c <= lines[l].length) setTimeout(type, 60);
+  else { c = 0; l++; setTimeout(type, 700); }
 }
 
-function typeLine() {
-  if (line >= introText.length) {
-    setTimeout(startReveal, 1200);
-    return;
-  }
-  overlay.innerText = introText[line].slice(0, char++);
-  if (char <= introText[line].length) {
-    setTimeout(typeLine, 60);
-  } else {
-    char = 0;
-    line++;
-    setTimeout(typeLine, 700);
-  }
-}
-
-/* ===============================
-   🔥 NAME + IMAGE REVEAL (SIMULTANEOUS)
-================================ */
-function startReveal() {
-  overlay.innerText = "This message is specially for...";
+/* REVEAL */
+let blast = false;
+function reveal() {
+  overlay.innerText = "This celebration is for...";
   setTimeout(() => {
     overlay.style.display = "none";
-
-    // 🔥 SHOW IMAGE + NAME TOGETHER
     bg.style.opacity = "1";
     document.getElementById("main").style.display = "block";
-    document.getElementById("name").innerText = username.toUpperCase();
-
-    blastMode = true;
-  }, 2500);
+    document.getElementById("name").innerText = rawName.toUpperCase();
+    blast = true;
+  }, 1500);
 }
 
-/* ===============================
-   FIREWORKS
-================================ */
+/* FIREWORKS */
 const canvas = document.getElementById("canvas");
-const ctx2 = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth; canvas.height = innerHeight;
 
 let fireworks = [];
-let blastMode = false;
 
 class Firework {
   constructor() {
     this.x = Math.random() * canvas.width;
     this.y = canvas.height;
-    this.targetY = Math.random() * canvas.height / 2;
-    this.speed = 6;
-    this.exploded = false;
-    this.particles = [];
+    this.t = Math.random() * canvas.height / 2;
+    this.e = false;
+    this.p = [];
   }
   update() {
-    if (!this.exploded) {
-      this.y -= this.speed;
-      if (this.y <= this.targetY) {
-        this.exploded = true;
-        for (let i = 0; i < (blastMode ? 120 : 40); i++) {
-          this.particles.push(new Particle(this.x, this.y));
-        }
+    if (!this.e) {
+      this.y -= 6;
+      if (this.y <= this.t) {
+        this.e = true;
+        for (let i = 0; i < (blast ? 120 : 40); i++)
+          this.p.push(new Particle(this.x, this.y));
       }
     }
   }
   draw() {
-    if (!this.exploded) {
-      ctx2.fillStyle = "white";
-      ctx2.beginPath();
-      ctx2.arc(this.x, this.y, 2, 0, Math.PI * 2);
-      ctx2.fill();
+    if (!this.e) {
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+      ctx.fill();
     }
   }
 }
 
 class Particle {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.angle = Math.random() * Math.PI * 2;
-    this.speed = Math.random() * 8 + 2;
-    this.life = 80;
-    this.color = `hsl(${Math.random() * 360},100%,60%)`;
+  constructor(x,y){
+    this.x=x; this.y=y;
+    this.a=Math.random()*Math.PI*2;
+    this.s=Math.random()*8+2;
+    this.l=80;
+    this.c=`hsl(${Math.random()*360},100%,60%)`;
   }
-  update() {
-    this.x += Math.cos(this.angle) * this.speed;
-    this.y += Math.sin(this.angle) * this.speed;
-    this.life--;
+  update(){
+    this.x+=Math.cos(this.a)*this.s;
+    this.y+=Math.sin(this.a)*this.s;
+    this.l--;
   }
-  draw() {
-    ctx2.fillStyle = this.color;
-    ctx2.beginPath();
-    ctx2.arc(this.x, this.y, 2, 0, Math.PI * 2);
-    ctx2.fill();
+  draw(){
+    ctx.fillStyle=this.c;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,2,0,Math.PI*2);
+    ctx.fill();
   }
 }
 
-function animate() {
-  ctx2.clearRect(0,0,canvas.width,canvas.height);
-
-  if (Math.random() < (blastMode ? 0.15 : 0.03))
-    fireworks.push(new Firework());
-
-  fireworks.forEach((fw, i) => {
-    fw.update();
-    fw.draw();
-    fw.particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-    fw.particles = fw.particles.filter(p => p.life > 0);
-    if (fw.exploded && fw.particles.length === 0)
-      fireworks.splice(i, 1);
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(Math.random()<(blast?.15:.03))fireworks.push(new Firework());
+  fireworks.forEach((f,i)=>{
+    f.update(); f.draw();
+    f.p.forEach(p=>{p.update();p.draw();});
+    f.p=f.p.filter(p=>p.l>0);
+    if(f.e&&f.p.length==0)fireworks.splice(i,1);
   });
-
   requestAnimationFrame(animate);
 }
-
 animate();
 </script>
 
